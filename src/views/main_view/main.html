@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+    <head>
+        <title>My website</title>
+        {{styles}}
+    </head>
+    <body>
+        <!--[if lt IE 9]>
+        <div class="ie-upgrade-container">
+            <p class="ie-upgrade-message">Please, upgrade Internet Explorer to continue using this software.</p>
+            <a class="ie-upgrade-link" target="_blank" href="https://www.mozilla.org/firefox/new/">Upgrade</a>
+        </div>
+        <![endif]-->
+        <!--[if gte IE 9  | !IE ]>
+                {{scripts}}
+        <![endif]-->
+        
+        <table id="process_table">
+          <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Process name</th>
+            <th>Command line</th> 
+            <th class="align_right">
+              <div>27%</div>
+              <p>CPU</p>
+            </th>
+            <th class="align_right">
+              <div>27%</div>
+              <p>Memory</p>
+            </th>
+            <th class="align_right">
+              <div>2%</div>
+              <p>Disk</p>
+            </th>
+            <th class="align_right">
+              <div>0%</div>
+              <p>Network</p>
+            </th>
+          </tr>
+          <tr>
+            <td>Microsoft Edge</td>
+            <td>Background process</td>
+            <td>MicrosoftEdgeCp.exe</td>
+            <td>C://Edge.exe</td>
+            <td>9.3%</td>
+            <td>316.9 MB</td>
+            <td>0 MB/s</td>
+            <td>0 Mbps</td>
+          </tr>
+        </table>
+
+    </body>
+</html>
