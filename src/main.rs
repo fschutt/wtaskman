@@ -11,8 +11,10 @@ extern crate itertools;
 
 use urlencoding::encode;
 use web_view::*;
+use std::io;
 
 const APP_TITLE: &str = "Task Manager";
+const GTK_OVERLAY_SCROLLING: &str = "GTK_OVERLAY_SCROLLING";
 
 /// The data
 #[derive(Debug, Serialize, Deserialize, Default)]
@@ -52,6 +54,20 @@ pub enum ProcessType {
     SystemProcess,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Html(pub String);
+
+impl ProcessType {
+    pub fn to_str(&self) -> &'static str {
+        use ProcessType::*;
+        match *self {
+            BackgroundProcess => "Background process",
+            App => "App",
+            SystemProcess => "System process",
+        }
+    }
+}
+
 #[derive(Deserialize)]
 #[serde(tag = "cmd")]
 pub enum Cmd {
@@ -86,7 +102,8 @@ fn webview_cb<'a>(webview: &mut WebView<'a, RpcData>, arg: &str, data: &mut RpcD
                 Cmd::Update => {
                     if let Ok(processes) = get_currently_running_processes() {
                         data.running_processes = processes;
-                        webview.eval(&format!("rpc.update_process_table_view({})", serde_json::to_string(&data.running_processes).unwrap()));
+                        let html = Html(build_process_info_string(&data.running_processes));
+                        webview.eval(&format!("rpc.update_process_table_view({})", serde_json::to_string(&html).unwrap()));
                     } else {
                         eprintln!("Update command failed");
                     }
@@ -101,7 +118,6 @@ fn webview_cb<'a>(webview: &mut WebView<'a, RpcData>, arg: &str, data: &mut RpcD
     // webview.eval(&format!("rpc.render({})", serde_json::to_string(tasks).unwrap()));
 }
 
-const GTK_OVERLAY_SCROLLING: &str = "GTK_OVERLAY_SCROLLING";
 fn main() {
 
     use std::env;
@@ -114,7 +130,7 @@ fn main() {
     let resizable = true;
     let debug = true;
 
-    let init_cb = |_webview| {};
+    let init_cb = |_webview| { };
 
     let userdata = RpcData {
         running_processes: get_currently_running_processes().unwrap_or_else(|_e| Vec::new()),
@@ -134,8 +150,6 @@ fn main() {
     }
 }
 
-use std::io;
-
 #[derive(Debug)]
 pub enum GetProcessError {
     Io(io::Error),
@@ -151,9 +165,10 @@ impl From<io::Error> for GetProcessError {
 #[cfg(target_os="linux")]
 pub fn get_currently_running_processes() -> Result<Vec<ProcessInfo>, GetProcessError>  {
 
-    use std::path::Path;
+    use std::path::{Path, PathBuf};
     use std::fs;
     use itertools::Itertools;
+    use procinfo::pid::{status, cwd, Status};
 
     let proc_dir = Path::new("/proc");
 
@@ -163,24 +178,20 @@ pub fn get_currently_running_processes() -> Result<Vec<ProcessInfo>, GetProcessE
 
     let proc_iter = fs::read_dir(proc_dir)?;
 
-    use procinfo::pid::Status;
-
     let mut running_processes = proc_iter
         .filter_map(|e| e.ok())
         .filter_map(|e| e.file_name().into_string().ok())
         .filter_map(|e| e.parse::<i32>().ok())
         .filter_map(|pid| {
-            if let Ok(status) = procinfo::pid::status(pid) {
-                if let Ok(cwd) = procinfo::pid::cwd(pid) {
-                    return Some((status, cwd));
-                }
+            if let (Ok(status), Ok(cwd)) = (status(pid), cwd(pid)) {
+                Some((status, cwd))
+            } else {
+               None 
             }
-            None
         })
         .collect::<Vec<(Status, PathBuf)>>();
 
     running_processes.sort_unstable_by_key(|&(ref a, _)| a.command.clone());
-    use std::path::PathBuf;
 
     let grouped_processes: Vec<(String, Vec<(Status, PathBuf)>)> = running_processes
         .into_iter()
@@ -208,4 +219,74 @@ pub fn get_currently_running_processes() -> Result<Vec<ProcessInfo>, GetProcessE
             network: 0.0,
         }
     }).collect())
+}
+
+const PROCESS_TABLE_HEADER: &str = "                                \
+<tr>                                                                \
+  <th><p>Name</p></th>                                              \
+  <th class='seperator_v movable'></th>                             \
+  <th><p>Type</p></th>                                              \
+  <th class='seperator_v movable'></th>                             \
+  <th><p>Process name</p></th>                                      \
+  <th class='seperator_v movable'></th>                             \
+  <th><p>Command line</p></th>                                      \
+  <th class='seperator_v movable'></th>                             \
+  <th class='align_right width_fixed_100 selected_column_blue'>     \
+    <div>27%</div>                                                  \
+    <p>CPU</p>                                                      \
+  </th>                                                             \
+  <th class='seperator_v'></th>                                     \
+  <th class='align_right width_fixed_100'>                          \
+    <div>27%</div>                                                  \
+    <p>Memory</p>                                                   \
+  </th>                                                             \
+  <th class='seperator_v'></th>                                     \
+  <th class='align_right width_fixed_100'>                          \
+    <div>2%</div>                                                   \
+    <p>Disk</p>                                                     \
+  </th>                                                             \
+  <th class='seperator_v'></th>                                     \
+  <th class='align_right width_fixed_100'>                          \
+    <div>0%</div>                                                   \
+    <p>Network</p>                                                  \
+  </th>                                                             \
+</tr>                                                               \
+";
+
+pub fn build_process_info_string(process_infos: &[ProcessInfo]) -> String {
+    let rows = process_infos.iter().map(|info| info.into_html_row()).collect::<Vec<_>>().join("");
+    format!("{}{}", PROCESS_TABLE_HEADER, rows)
+}
+
+impl ProcessInfo {
+    /// Returns the HTML String for one row
+    pub fn into_html_row(&self) -> String {
+        format!("
+<tr>
+  <td class='app_name'>{app_name}</td>
+  <td class='seperator_v movable'></td>
+  <td>{process_type}</td>
+  <td class='seperator_v movable'></td>
+  <td>{process_name}</td>
+  <td class='seperator_v movable'></td>
+  <td>{command_line}</td>
+  <td class='seperator_v cpu'></td>
+  <td class='align_right width_fixed_100 very_dark_yellow cpu'>{cpu_percentage}%</td>
+  <td class='seperator_v ram'></td>
+  <td class='align_right width_fixed_100 dark_yellow ram'>{ram} MB</td>
+  <td class='seperator_v disk'></td>
+  <td class='align_right width_fixed_100 middle_yellow disk'>{disk} MB/s</td>
+  <td class='seperator_v network'></td>
+  <td class='align_right width_fixed_100 light_yellow network'>{network} Mbps</td>
+</tr>", 
+        app_name = self.name,
+        process_type = self.process_type.to_str(),
+        process_name = self.process_name,
+        command_line = self.command_line,
+        cpu_percentage = format!("{:.1}", self.cpu_percentage),
+        ram = format!("{:.1}", self.memory),
+        disk = format!("{:.1}", self.disk),
+        network = format!("{:.1}", self.network),
+)
+    }
 }
