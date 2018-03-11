@@ -17,7 +17,7 @@ var rpc = {
     rpc.invoke({cmd : 'markTask', index : index, done : done});
   },
   render : function(items) {
-    return element = picodom.patch(oldNode, (oldNode = UI(items)), element);
+    // return element = picodom.patch(oldNode, (oldNode = UI(items)), element);
   },
 };
 

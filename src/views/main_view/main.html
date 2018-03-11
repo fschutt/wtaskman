@@ -1,54 +1,93 @@
 <!doctype html>
 <html>
     <head>
-        <title>My website</title>
         {{styles}}
     </head>
     <body>
-        <!--[if lt IE 9]>
-        <div class="ie-upgrade-container">
-            <p class="ie-upgrade-message">Please, upgrade Internet Explorer to continue using this software.</p>
-            <a class="ie-upgrade-link" target="_blank" href="https://www.mozilla.org/firefox/new/">Upgrade</a>
+
+      <table id="file_menu">
+        <tr>
+          <td>File</td>
+          <td>Options</td>
+          <td>View</td>
+        </tr>  
+      </table>
+
+      <hr id="seperator_file_tabs" />
+
+      <table id="tabs">
+        <tr>
+          <td>Processes</td>
+          <td>Performance</td>
+          <td>App History</td>
+          <td>Start-up</td>
+          <td>Users</td>
+          <td>Details</td>
+          <td>Services</td>
+        </tr>  
+      </table>
+
+      <hr id="seperator_tabs_content" />
+
+      <table id="process_table">
+        <tr>
+          <th><p>Name</p></th>
+          <th class="seperator_v movable"></th>
+          <th><p>Type</p></th>
+          <th class="seperator_v movable"></th>
+          <th><p>Process name</p></th>
+          <th class="seperator_v movable"></th>
+          <th><p>Command line</p></th> 
+          <th class="seperator_v movable"></th>
+          <th class="align_right width_fixed_100 selected_column_blue">
+            <div>27%</div>
+            <p>CPU</p>
+          </th>
+          <th class="seperator_v"></th>
+          <th class="align_right width_fixed_100">
+            <div>27%</div>
+            <p>Memory</p>
+          </th>
+          <th class="seperator_v"></th>
+          <th class="align_right width_fixed_100">
+            <div>2%</div>
+            <p>Disk</p>
+          </th>
+          <th class="seperator_v"></th>
+          <th class="align_right width_fixed_100">
+            <div>0%</div>
+            <p>Network</p>
+          </th>
+        </tr>
+        <tr>
+          <td class="app_name">Microsoft Edge</td>
+          <td class="seperator_v movable"></td>
+          <td>Background process</td>
+          <td class="seperator_v movable"></td>
+          <td>MicrosoftEdgeCp.exe</td>
+          <td class="seperator_v movable"></td>
+          <td>C://Edge.exe</td>
+          <td class="seperator_v"></td>
+          <td class="align_right width_fixed_100 very_dark_yellow">9.3%</td>
+          <td class="seperator_v"></td>
+          <td class="align_right width_fixed_100 middle_yellow">316.9 MB</td>
+          <td class="seperator_v"></td>
+          <td class="align_right width_fixed_100 light_yellow">0 MB/s</td>
+          <td class="seperator_v"></td>
+          <td class="align_right width_fixed_100 light_yellow">0 Mbps</td>
+        </tr>
+      </table>
+
+      <div id="bottom_area">
+        <div id="fewer_details">
+          <button>^</button>
+          <p>Fewer details</p>
         </div>
-        <![endif]-->
-        <!--[if gte IE 9  | !IE ]>
-                {{scripts}}
-        <![endif]-->
-        
-        <table id="process_table">
-          <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Process name</th>
-            <th>Command line</th> 
-            <th class="align_right">
-              <div>27%</div>
-              <p>CPU</p>
-            </th>
-            <th class="align_right">
-              <div>27%</div>
-              <p>Memory</p>
-            </th>
-            <th class="align_right">
-              <div>2%</div>
-              <p>Disk</p>
-            </th>
-            <th class="align_right">
-              <div>0%</div>
-              <p>Network</p>
-            </th>
-          </tr>
-          <tr>
-            <td>Microsoft Edge</td>
-            <td>Background process</td>
-            <td>MicrosoftEdgeCp.exe</td>
-            <td>C://Edge.exe</td>
-            <td>9.3%</td>
-            <td>316.9 MB</td>
-            <td>0 MB/s</td>
-            <td>0 Mbps</td>
-          </tr>
-        </table>
+        <div id="end_task">
+          <button>End task</button>
+        </div>
+      </div>
+      {{scripts}}
 
     </body>
 </html>
