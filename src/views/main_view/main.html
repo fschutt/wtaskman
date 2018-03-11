@@ -1,15 +1,16 @@
 <!doctype html>
 <html>
     <head>
+        <meta charset="utf-8"/>
         {{styles}}
     </head>
     <body>
 
-      <table id="file_menu">
+      <table id="global_menu">
         <tr>
-          <td>File</td>
-          <td>Options</td>
-          <td>View</td>
+          <td id="global_menu_file">File</td>
+          <td id="global_menu_options">Options</td>
+          <td id="global_menu_view">View</td>
         </tr>  
       </table>
 
@@ -17,13 +18,13 @@
 
       <table id="tabs">
         <tr>
-          <td>Processes</td>
-          <td>Performance</td>
-          <td>App History</td>
-          <td>Start-up</td>
-          <td>Users</td>
-          <td>Details</td>
-          <td>Services</td>
+          <td id="tabs_processes">Processes</td>
+          <td id="tabs_performance">Performance</td>
+          <td id="tabs_app_history">App History</td>
+          <td id="tabs_startup">Start-up</td>
+          <td id="tabs_users">Users</td>
+          <td id="tabs_details">Details</td>
+          <td id="tabs_services">Services</td>
         </tr>  
       </table>
 
@@ -67,20 +68,26 @@
           <td>MicrosoftEdgeCp.exe</td>
           <td class="seperator_v movable"></td>
           <td>C://Edge.exe</td>
-          <td class="seperator_v"></td>
-          <td class="align_right width_fixed_100 very_dark_yellow">9.3%</td>
-          <td class="seperator_v"></td>
-          <td class="align_right width_fixed_100 middle_yellow">316.9 MB</td>
-          <td class="seperator_v"></td>
-          <td class="align_right width_fixed_100 light_yellow">0 MB/s</td>
-          <td class="seperator_v"></td>
-          <td class="align_right width_fixed_100 light_yellow">0 Mbps</td>
+          <td class="seperator_v cpu"></td>
+          <td class="align_right width_fixed_100 very_dark_yellow cpu">9.3%</td>
+          <td class="seperator_v ram"></td>
+          <td class="align_right width_fixed_100 dark_yellow ram">316.9 MB</td>
+          <td class="seperator_v disk"></td>
+          <td class="align_right width_fixed_100 middle_yellow disk">0 MB/s</td>
+          <td class="seperator_v network"></td>
+          <td class="align_right width_fixed_100 light_yellow network">0 Mbps</td>
         </tr>
       </table>
 
       <div id="bottom_area">
         <div id="fewer_details">
-          <button>^</button>
+          <button>
+            <svg xmlns="http://www.w3.org/2000/svg" height="6" width="11" version="1.1" viewBox="0 0 2.9104166 1.5875">
+             <g transform="translate(0 -295.41)">
+              <path stroke-linejoin="round" d="m0.40244 296.82 1.1186-1.1976 0.98704 1.1951" stroke="#7a7a7a" stroke-linecap="round" stroke-width=".38983" fill="none"/>
+             </g>
+            </svg>
+          </button>
           <p>Fewer details</p>
         </div>
         <div id="end_task">

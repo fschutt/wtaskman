@@ -12,7 +12,7 @@
     font-size: 0.95rem;
     border: none;
     outline: none;
-
+    color: #222222;
 }
 
 table {
@@ -24,33 +24,58 @@ table {
     border-collapse: collapse;
 }
 
-hr#seperator_tabs_content {
-    border: 1px solid red;
-}
-
 hr#seperator_file_tabs {
-    border: 1px solid green;
+    border: 1px solid #f2f2f2;
+    box-shadow: 0px -1px 0px #fbfbfb;
 }
 
-table#file_menu td {
+hr#seperator_tabs_content {
+    border: 1px solid #e8e8e8;
+}
+
+table#global_menu td {
     margin: 0px;
     padding-top: 2px;
     padding-right: 4px;
-    padding-bottom: 0px;
+    padding-left: 4px;
+    padding-bottom: 2px;
     cursor: pointer;
+}
+
+table#global_menu td:hover {
+    background: green;
+}
+
+table#global_menu tr {
+    height: 16px;
 }
 
 table#tabs td {
     margin: 0px;
     border: none;
-    padding-top: 2px;
-    padding-right: 4px;
-    padding-bottom: 1px;
+    padding-top: 6px;
+    padding-right: 3px;
+    padding-left: 3px;
+    padding-bottom: 4px;
     cursor: pointer;
+    background: #f0f0f0;
+    border: 1px solid #e8e8e8;
+}
+
+table#tabs {
+    margin-top: 4px;
+}
+
+table#tabs tr {
+    height: 20px;
 }
 
 table#tabs td:hover {
     background: red;
+}
+
+table#process_table {
+    margin-top: 14px;
 }
 
 table#process_table th {
@@ -69,7 +94,7 @@ table#process_table th:not(.seperator_v) {
     padding: 7px;
 }
 
-table#process_table .seperator_v {
+table#process_table th.seperator_v {
     background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#bfbfbf), to(transparent));
     background-image: -webkit-linear-gradient(transparent, #bfbfbf);
     background-image: -moz-linear-gradient(transparent, #bfbfbf);
@@ -84,13 +109,18 @@ table#process_table {
 
 table#process_table th, #process_table th .align_right {
     vertical-align: bottom;
+    position: relative; /* necessary so we can insert the up / down sorting arrows */
 }
 
 table#process_table *:hover {
     cursor: pointer;
 }
 
-table#process_table .seperator_v:hover {
+table#process_table th:hover {
+    background: #f2f9ff; /* 50% lightened color from #e5f3ff */
+}
+
+table#process_table .seperator_v.movable:hover {
     cursor: col-resize;
 }
 
@@ -133,23 +163,32 @@ div#bottom_area {
 }
 
 div#fewer_details {
-    border-top: 1px solid black;
+    border-top: 1px solid #a7a7a7;
 }
 
 div#fewer_details button {
-    color: #;
+    color: #7a7a7a;
+    background: white;
     border-radius: 10px;
     width: 20px;
     height: 20px;
-    border: 1px solid #efefef;
-    line-height: 20px;
+    border: 1px solid #7a7a7a;
+    line-height: 0px;
     display: inline-block;
+    cursor: pointer;
 }
 
+div#fewer_details p {
+    color: #222222;
+}
+
+/* end task button, greyed out */
 div#end_task button {
-    color: grey;
+    color: #8a91a6;
+    background: #cccccc;
     padding: 3.5px 20px;
-    border: 1px solid #efefef;
+    border: 1px solid #c8c8c8;
+    font-size: 0.85rem;
 }
 
 .selected_column_blue {
@@ -162,16 +201,25 @@ div#end_task button {
 
 .very_dark_yellow {
     background: #ffc63d;
+    box-shadow: -0.5px 0px 0px #ffc63d;
 }
 
 .dark_yellow {
     background: #ffe487;
+    box-shadow: -0.5px 0px 0px #ffe487;
 }
 
 .middle_yellow {
     background: #f9eca8;
+    box-shadow: -0.5px 0px 0px #f9eca8;
 }
 
 .light_yellow {
     background: #fff4c4;
+    box-shadow: -0.5px 0px 0px #fff4c4;
+}
+
+td.seperator_v.cpu, td.seperator_v.disk, td.seperator_v.ram, td.seperator_v.network {
+    background: rgba(0, 0, 0, 0.3);
+    width: 0.5px;
 }
