@@ -101,7 +101,13 @@ fn webview_cb<'a>(webview: &mut WebView<'a, RpcData>, arg: &str, data: &mut RpcD
     // webview.eval(&format!("rpc.render({})", serde_json::to_string(tasks).unwrap()));
 }
 
+const GTK_OVERLAY_SCROLLING: &str = "GTK_OVERLAY_SCROLLING";
 fn main() {
+
+    use std::env;
+    let original_value = env::var(GTK_OVERLAY_SCROLLING);
+    env::set_var(GTK_OVERLAY_SCROLLING, "0"); // disable overlaid scrollbars
+    
     let app_html = include_str!("dist/app.html");
     let url = "data:text/html,".to_string() + &encode(&app_html);
     let size = (840, 630);
@@ -121,6 +127,10 @@ fn main() {
 
     if !launched_successful {
         println!("failed to launch {}", env!("CARGO_PKG_NAME"));
+    }
+
+    if let Ok(original_value) = original_value {
+        env::set_var(GTK_OVERLAY_SCROLLING, original_value);
     }
 }
 

@@ -53,9 +53,13 @@ let rpc = {
   }
 };
 
-document.getElementById("end_task").addEventListener("click", function() {
+function update_process_table() {
     rpc.invoke({ cmd : 'update_process_table' });
-}, false);
+}
+
+document.getElementById("end_task").addEventListener("click", update_process_table, false);
+
+setInterval(update_process_table, 1000);
 
 // returns an HTML string for the process table from a process_info struct (see Rust side)
 function populate_row_process_table(process_info) {
@@ -68,13 +72,13 @@ function populate_row_process_table(process_info) {
     row_html += '<td class="seperator_v movable"></td>';
     row_html += ('<td>' + process_info.command_line + '</td>');
     row_html += '<td class="seperator_v cpu"></td>';
-    row_html += ('<td class="align_right width_fixed_100 light_yellow">' + process_info.cpu_percentage + '%' + '</td>');
+    row_html += ('<td class="align_right width_fixed_100 light_yellow">' + process_info.cpu_percentage.toFixed(1) + '%' + '</td>');
     row_html += '<td class="seperator_v ram"></td>';
-    row_html += ('<td class="align_right width_fixed_100 light_yellow">' + process_info.memory + ' MB' + '</td>');
+    row_html += ('<td class="align_right width_fixed_100 light_yellow">' + process_info.memory.toFixed(1) + ' MB' + '</td>');
     row_html += '<td class="seperator_v disk"></td>';
-    row_html += ('<td class="align_right width_fixed_100 light_yellow">' + process_info.disk + ' MB/s' + '</td>');
+    row_html += ('<td class="align_right width_fixed_100 light_yellow">' + Math.round(process_info.disk) + ' MB/s' + '</td>');
     row_html += '<td class="seperator_v network"></td>';
-    row_html += ('<td class="align_right width_fixed_100 light_yellow">' + process_info.network + ' Mbps' + '</td>');
+    row_html += ('<td class="align_right width_fixed_100 light_yellow">' + process_info.network.toFixed(1) + ' Mbps' + '</td>');
     row_html += '</tr>';
     return row_html;
 }
