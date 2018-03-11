@@ -7,11 +7,13 @@ let rpc = {
     }
     rpc.invoke({cmd: 'log', text: text_to_log});
   },
-  render : function(items) {
+  render: function(items) {
     // This function is called from the Rust side, we need to update the given elements here ... 
     // return element = picodom.patch(oldNode, (oldNode = UI(items)), element);
   },
-
+  update_process_table_view: function(processes) {
+    // document.getElementById("process_table").innerHTML = JSON.stringify(processes);
+  }
 };
 
 document.getElementById("global_menu_file").addEventListener("click", function() {
