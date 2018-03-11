@@ -1,3 +1,5 @@
+"use strict";
+
 let rpc = {
   invoke : function(arg) { window.external.invoke(JSON.stringify(arg)); },
   init : function() { rpc.invoke({ cmd : 'init' }); },
@@ -12,12 +14,69 @@ let rpc = {
     // return element = picodom.patch(oldNode, (oldNode = UI(items)), element);
   },
   update_process_table_view: function(processes) {
-    // document.getElementById("process_table").innerHTML = JSON.stringify(processes);
+    let process_table_string = '                                            \
+        <tr>                                                                \
+          <th><p>Name</p></th>                                              \
+          <th class="seperator_v movable"></th>                             \
+          <th><p>Type</p></th>                                              \
+          <th class="seperator_v movable"></th>                             \
+          <th><p>Process name</p></th>                                      \
+          <th class="seperator_v movable"></th>                             \
+          <th><p>Command line</p></th>                                      \
+          <th class="seperator_v movable"></th>                             \
+          <th class="align_right width_fixed_100 selected_column_blue">     \
+            <div>27%</div>                                                  \
+            <p>CPU</p>                                                      \
+          </th>                                                             \
+          <th class="seperator_v"></th>                                     \
+          <th class="align_right width_fixed_100">                          \
+            <div>27%</div>                                                  \
+            <p>Memory</p>                                                   \
+          </th>                                                             \
+          <th class="seperator_v"></th>                                     \
+          <th class="align_right width_fixed_100">                          \
+            <div>2%</div>                                                   \
+            <p>Disk</p>                                                     \
+          </th>                                                             \
+          <th class="seperator_v"></th>                                     \
+          <th class="align_right width_fixed_100">                          \
+            <div>0%</div>                                                   \
+            <p>Network</p>                                                  \
+          </th>                                                             \
+        </tr>                                                               \
+    ';
+    for (let i = 0; i < processes.length; i++) {
+      process_table_string += populate_row_process_table(processes[i]);
+    }
+
+    document.getElementById("process_table").innerHTML = process_table_string;
   }
 };
 
-document.getElementById("global_menu_file").addEventListener("click", function() {
-    rpc.invoke({ cmd : 'update_stuff' });
+document.getElementById("end_task").addEventListener("click", function() {
+    rpc.invoke({ cmd : 'update_process_table' });
 }, false);
+
+// returns an HTML string for the process table from a process_info struct (see Rust side)
+function populate_row_process_table(process_info) {
+    let row_html = '<tr>';
+    row_html += ('<td class="app_name">' + process_info.name + '</td>');
+    row_html += '<td class="seperator_v movable"></td>';
+    row_html += ('<td>' + process_info.process_type + '</td>');
+    row_html += '<td class="seperator_v movable"></td>';
+    row_html += ('<td>' + process_info.process_name + '</td>');
+    row_html += '<td class="seperator_v movable"></td>';
+    row_html += ('<td>' + process_info.command_line + '</td>');
+    row_html += '<td class="seperator_v cpu"></td>';
+    row_html += ('<td class="align_right width_fixed_100 light_yellow">' + process_info.cpu_percentage + '%' + '</td>');
+    row_html += '<td class="seperator_v ram"></td>';
+    row_html += ('<td class="align_right width_fixed_100 light_yellow">' + process_info.memory + ' MB' + '</td>');
+    row_html += '<td class="seperator_v disk"></td>';
+    row_html += ('<td class="align_right width_fixed_100 light_yellow">' + process_info.disk + ' MB/s' + '</td>');
+    row_html += '<td class="seperator_v network"></td>';
+    row_html += ('<td class="align_right width_fixed_100 light_yellow">' + process_info.network + ' Mbps' + '</td>');
+    row_html += '</tr>';
+    return row_html;
+}
 
 window.onload = function() { rpc.init(); };

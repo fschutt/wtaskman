@@ -160,6 +160,7 @@ div#bottom_area {
     position: fixed;
     width: 100%;
     bottom: 0px;
+    background: white;
 }
 
 div#fewer_details {

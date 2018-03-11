@@ -24,25 +24,25 @@ pub struct RpcData {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ProcessInfo {
     /// The name of the process in the UI
-    name: String,
+    pub name: String,
     /// The image of the executable, or null for a default icon
-    image_path: Option<String>,
+    pub image_path: Option<String>,
     /// Type of process
-    process_type: ProcessType,
+    pub process_type: ProcessType,
     /// Publisher, or null if no publisher is active
-    publisher: Option<String>,
+    pub publisher: Option<String>,
     /// Process name
-    process_name: String,
+    pub process_name: String,
     /// Command line invokation
-    command_line: String,
+    pub command_line: String,
     /// CPU percentage
-    cpu_percentage: f32,
+    pub cpu_percentage: f32,
     /// Memory usage in MB (not MiB)!
-    memory: f32,
+    pub memory: f32,
     /// Disk usage of the process
-    disk: f32,
+    pub disk: f32,
     /// Network usage of the process
-    network: f32,
+    pub network: f32,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -65,6 +65,8 @@ pub enum Cmd {
     /// Selects a process to be killed
     #[serde(rename = "select_process")]
     SelectProcess { id: usize },
+    #[serde(rename = "update_process_table")]
+    Update,
 }
 
 fn webview_cb<'a>(webview: &mut WebView<'a, RpcData>, arg: &str, data: &mut RpcData) {
@@ -76,10 +78,18 @@ fn webview_cb<'a>(webview: &mut WebView<'a, RpcData>, arg: &str, data: &mut RpcD
                 Cmd::Log { text } => println!("{}", text),
                 Cmd::KillSelectedProcess => { 
                     println!("Killing processes ... {:?}", data.currently_selected_processes); 
-                }
+                },
                 Cmd::SelectProcess { id } => {
                     println!("selecting process for killing: {:?}", id);
                     data.currently_selected_processes.push(id);
+                },
+                Cmd::Update => {
+                    if let Ok(processes) = get_currently_running_processes() {
+                        data.running_processes = processes;
+                        webview.eval(&format!("rpc.update_process_table_view({})", serde_json::to_string(&data.running_processes).unwrap()));
+                    } else {
+                        eprintln!("Update command failed");
+                    }
                 }
             }
         },
@@ -88,7 +98,6 @@ fn webview_cb<'a>(webview: &mut WebView<'a, RpcData>, arg: &str, data: &mut RpcD
         }
     }
 
-    webview.eval(&format!("rpc.update_process_table_view({})", serde_json::to_string(&data.running_processes).unwrap()));
     // webview.eval(&format!("rpc.render({})", serde_json::to_string(tasks).unwrap()));
 }
 
@@ -128,7 +137,6 @@ impl From<io::Error> for GetProcessError {
         GetProcessError::Io(e)
     }
 }
-// i32;
 
 #[cfg(target_os="linux")]
 pub fn get_currently_running_processes() -> Result<Vec<ProcessInfo>, GetProcessError>  {
@@ -138,7 +146,7 @@ pub fn get_currently_running_processes() -> Result<Vec<ProcessInfo>, GetProcessE
     use itertools::Itertools;
 
     let proc_dir = Path::new("/proc");
-    
+
     if !proc_dir.exists() || !proc_dir.is_dir() {
         return Err(GetProcessError::ProcDoesNotExist);
     }
@@ -147,20 +155,47 @@ pub fn get_currently_running_processes() -> Result<Vec<ProcessInfo>, GetProcessE
 
     use procinfo::pid::Status;
 
-    let running_processes: Vec<(String, Vec<Status>)> = proc_iter
+    let mut running_processes = proc_iter
         .filter_map(|e| e.ok())
         .filter_map(|e| e.file_name().into_string().ok())
         .filter_map(|e| e.parse::<i32>().ok())
-        .filter_map(|pid| procinfo::pid::status(pid).ok())
-        .group_by(|status| status.command.clone())
+        .filter_map(|pid| {
+            if let Ok(status) = procinfo::pid::status(pid) {
+                if let Ok(cwd) = procinfo::pid::cwd(pid) {
+                    return Some((status, cwd));
+                }
+            }
+            None
+        })
+        .collect::<Vec<(Status, PathBuf)>>();
+
+    running_processes.sort_unstable_by_key(|&(ref a, _)| a.command.clone());
+    use std::path::PathBuf;
+
+    let grouped_processes: Vec<(String, Vec<(Status, PathBuf)>)> = running_processes
+        .into_iter()
+        .group_by(|&(ref status, _)| status.command.clone())
         .into_iter()
         .map(|(k, v)| (k, v.into_iter().collect()))
         .collect();
 
-    for (k, _) in running_processes {
-        println!("{:?}", k);
-    }
+    Ok(grouped_processes.into_iter().map(|(process_name, v)| {
+        // TODO: We can't just use status.vm_size because that includes memory that is 
+        // shared with other processes
+        let total_mem_kilobyte = v.iter().map(|&(ref status, _)| status.vm_size).sum::<usize>() as f32 / 8.0;
+        let total_mem_megabyte = total_mem_kilobyte / 1000.0;
 
-    Ok(Vec::new()) // TODO
-
+        ProcessInfo {
+            name: process_name.clone(),
+            image_path: None,
+            process_type: ProcessType::App,
+            publisher: None,
+            process_name: process_name,
+            command_line: (v[0].1).to_str().unwrap().to_string(),
+            cpu_percentage: 0.0,
+            memory: total_mem_megabyte,
+            disk: 0.0,
+            network: 0.0,
+        }
+    }).collect())
 }
